@@ -7,7 +7,7 @@ const UserSchema = new Schema({
     required:true,
     unique:true
   },
-  name:{
+  fullname:{
     type:String,
     required:true,
   },
@@ -27,11 +27,6 @@ const UserSchema = new Schema({
     type:[number],
     required:true,
   },
-  role:{
-    type:String,
-    enum:['student','teacher','admin'],
-    default:'student'
-  },
   password:{
     type:String,
     required:[true,'Password is required']
@@ -45,7 +40,7 @@ const UserSchema = new Schema({
 UserSchema.pre("save",async function (next){
   if(!this.isModified("password")) return next();
     
-  this.password = bcrypt.hash(this.password,10);
+  this.password = await bcrypt.hash(this.password,10);
   next()
 })
 
@@ -59,8 +54,7 @@ UserSchema.methods.generateAccessToken = function(){
       _id:this._id,
       studentId:this.studentId,
       email:this.email,
-      name:this.name,
-      role:this.role
+      fullname:this.fullname,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
