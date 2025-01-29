@@ -215,12 +215,94 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
   }
 })
 
+const changeCurrentPassword = asyncHandler(async(req,res)=>{
+  const {oldPassword,newPassword} = req.body
+  const user = await User.findById(req.user?._id)
+  const isPasswordValid = await user.isPasswordCorrect(oldPassword)
+  
+  if(!isPasswordValid){
+    throw new ApiError(400,"Invalid Password")
+  }
 
+  user.password = newPassword
+  await user.save({validateBeforeSave:false})
+  return res.status(200)
+  .json(
+    new ApiResponse(200,{},"Password Changed Successfully")
+  )
+})
 
+const getCurrentUser = asyncHandler(async(req,res)=>{
+  return res.status(200)
+  .json(
+    200,
+    req.user,
+    "Current user fetched successfully"
+  )
+})
+
+const updateAccountDetails = asyncHandler(async (req,res)=>{
+   const {fullname,email} = req.body
+   if(!fullname || !email){
+    throw new ApiError(400,"All fields are required")
+   }
+
+   const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set:{
+        fullname,
+        email
+      }
+    },
+    {new:true,}
+  ).select("-password")
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      user,
+      "Account details updated successfully"
+    )
+  )
+})
+
+const updateUserPhoto = asyncHandler(async(req,res)=>{
+  const photoLocalPath = req.file?.path
+  if(!photoLocalPath){
+    throw new ApiError(400,"Photo file is missing")
+  }
+  const photo = await uploadOnCloudinary(photoLocalPath)
+  if(!photo.url){
+    throw new ApiError(400,"Error while uploading on avatar")
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set:{photo_url:photo.url}
+    },
+    {new:true}
+  ).select("-password")
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      user,
+      "Photo updated successfully"
+    )
+  )
+})
 
 export {
   registerUser,
   loginUser,
   logoutUser,
-  refreshAccessToken
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  updateAccountDetails,
+  updateUserPhoto
 }
