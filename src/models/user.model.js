@@ -23,17 +23,13 @@ const UserSchema = new Schema({
     type:String,
     required:false
   },
-  face_encoding:{
-    type:[number],
-    required:true,
-  },
+ 
   password:{
     type:String,
     required:[true,'Password is required']
   },
   refreshToken:{
     type:String,
-    required:true
   },
 },{timestamps:true})
 

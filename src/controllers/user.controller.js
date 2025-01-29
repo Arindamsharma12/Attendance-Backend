@@ -3,6 +3,8 @@ import {ApiError} from "../utils/ApiError.js"
 import {User} from '../models/user.model.js'
 import {uploadOnCloudinary} from '../utils/cloudinary.js'
 import {ApiResponse} from '../utils/ApiResponse.js'
+
+
 const registerUser = asyncHandler(async (req,res)=>{
   /*
     Registeration algo
@@ -35,6 +37,8 @@ const registerUser = asyncHandler(async (req,res)=>{
     throw new ApiError(409,"User with email or student id already exists")
   }
 
+  // console.log(req.files)
+
   const photoLocalPath = req.files?.photo[0]?.path
   if(!photoLocalPath){
     throw new ApiError(400,"Photo file is required")
@@ -45,11 +49,12 @@ const registerUser = asyncHandler(async (req,res)=>{
   if(!photo){
     throw new ApiError(400,"Photo file is required")
   }
+  console.log("PHOTO URL: ",photo.url)
 
   const user = await User.create({
     studentId,
     fullname,
-    photo: photo.url,
+    photo_url: photo.url,
     email,
     password,
     phone,
